@@ -1,0 +1,228 @@
+flask
+numpy
+pandas
+scikit-learn
+joblib
+python app.py
+
+
+
+
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vehicle Maintenance Prediction</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f2f2f2;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 700px;
+            margin: 50px auto;
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+        h2 {
+            text-align: center;
+            color: #333;
+        }
+        form {
+            display: grid;
+            grid-gap: 15px;
+        }
+        label {
+            font-weight: bold;
+        }
+        input, select {
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+        }
+        button {
+            padding: 12px;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            background: #e9ecef;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Vehicle Maintenance Prediction</h2>
+        <form id="vehicleForm">
+    <label for="Make_and_Model">Make and Model:</label>
+    <select id="Make_and_Model" name="Make_and_Model" required>
+          <option value="Volvo FH">Volvo FH</option>
+          <option value="Chevy Silverado">Chevy Silverado</option>
+          <option value="Ford F-150">Ford F-150</option>
+          <option value="Tesla Semi">Tesla Semi</option>
+    </select>
+
+
+    <label for="Year_of_Manufacture">Year of Manufacture:</label>
+    <input type="number" id="Year_of_Manufacture" name="Year_of_Manufacture" required>
+
+    <label for="Vehicle_Type">Vehicle Type:</label>
+    <select id="Vehicle_Type" name="Vehicle_Type">
+        <option value="Van">Van</option>
+        <option value="Truck">Truck</option>
+    </select>
+
+    <label for="Route_Info">Route Info:</label>
+    <select id="Route_Info" name="Route_Info">
+        <option value="Highway">Highway</option>
+        <option value="Urban">Urban</option>
+        <option value="Rural">Rural</option>
+    </select>
+
+
+    <label for="Maintenance_Type">Maintenance Type:</label>
+    <select id="Maintenance_Type" name="Maintenance_Type">
+            <option value="Tire Rotation">Tire Rotation</option>
+            <option value="Oil Change">Oil Change</option>
+            <option value="Engine Overhaul">Engine Overhaul</option>
+    </select>
+
+    <label for="Brake_Condition">Brake Condition:</label>
+    <select id="Brake_Condition" name="Brake_Condition">
+        <option value="Good">Good</option>
+        <option value="Fair">Fair</option>
+        <option value="Poor">Poor</option>
+    </select>
+
+    <label for="Failure_History">Failure History:</label>
+    <input type="number" id="Failure_History" name="Failure_History" required>
+
+    <label for="Weather_Conditions">Weather Conditions:</label>
+    <select id="Weather_Conditions" name="Weather_Conditions">
+        <option value="Clear">Clear</option>
+        <option value="Rainy">Rainy</option>
+        <option value="Snowy">Snowy</option>
+        <option value="Windy">Windy</option>
+    </select>
+
+
+    <label for="Road_Conditions">Road Conditions:</label>
+    <select id="Road_Conditions" name="Road_Conditions">
+        <option value="Highway">Highway</option>
+        <option value="Urban">Urban</option>
+        <option value="Rural">Rural</option>
+    </select>
+
+    <label for="Load_Capacity_final">Load Capacity:</label>
+    <input type="number" id="Load_Capacity_final" name="Load_Capacity_final" required>
+
+    <label for="Tire_Pressure_cat">Tire Pressure:</label>
+    <select id="Tire_Pressure_cat" name="Tire_Pressure_cat">
+        <option value="Normal">Normal</option>
+        <option value="Low">Low</option>
+        <option value="High">High</option>
+    </select>
+
+    <label for="Oil_Quality_cat">Oil Quality:</label>
+    <select id="Oil_Quality_cat" name="Oil_Quality_cat">
+        <option value="Good">Good</option>
+        <option value="Fair">Fair</option>
+        <option value="Poor">Poor</option>
+    </select>
+
+    <label for="Impact_on_Efficiency_cat">Impact on Efficiency:</label>
+    <select id="Impact_on_Efficiency_cat" name="Impact_on_Efficiency_cat">
+        <option value="Low">Low</option>
+        <option value="Medium">Medium</option>
+        <option value="High">High</option>
+    </select>
+
+    <label for="Vibration_Levels_cat">Vibration Levels:</label>
+    <select id="Vibration_Levels_cat" name="Vibration_Levels_cat">
+        <option value="Low">Low</option>
+        <option value="Medium">Medium</option>
+        <option value="High">High</option>
+    </select>
+
+    <label for="Downtime_Maintenance_cat">Downtime Maintenance:</label>
+    <select id="Downtime_Maintenance_cat" name="Downtime_Maintenance_cat">
+        <option value="None">None</option>
+        <option value="Short">Short</option>
+        <option value="Long">Long</option>
+    </select>
+
+    <label for="Fuel_Consumption_cat">Fuel Consumption:</label>
+    <select id="Fuel_Consumption_cat" name="Fuel_Consumption_cat">
+        <option value="Low">Low</option>
+        <option value="Medium">Medium</option>
+        <option value="High">High</option>
+    </select>
+
+    <label for="Last_Maintenance_Date">Last Maintenance Date:</label>
+    <input type="date" id="Last_Maintenance_Date" name="Last_Maintenance_Date" required>
+
+    <button type="submit">Predict</button>
+</form>
+
+
+        <div class="result" id="resultDiv" style="display:none;">
+            <h3>Prediction Result:</h3>
+            <p id="predictionText"></p>
+        </div>
+    </div>
+
+    <script>
+const form = document.getElementById('vehicleForm');
+
+form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    const formData = new FormData(form);
+    const data = {};
+    formData.forEach((value, key) => {
+        data[key] = value;
+    });
+
+    try {
+        const response = await fetch('/predict', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(data)
+        });
+
+        const result = await response.json();
+
+        document.getElementById('predictionText').innerText =
+            `Maintenance Needed: ${result.MaintenanceNeeded}
+Probability: ${result.Probability}`;
+
+        document.getElementById('resultDiv').style.display = 'block';
+
+    } catch (error) {
+        alert("Error while predicting. Check console.");
+        console.error(error);
+    }
+});
+</script>
+
+</body>
+</html>

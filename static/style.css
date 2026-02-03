@@ -1,0 +1,123 @@
+/* ===== Reset ===== */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Poppins', sans-serif;
+}
+
+/* ===== Body ===== */
+body {
+    background: #e8edf5;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+}
+
+/* ===== Container ===== */
+.container {
+    width: 100%;
+    max-width: 700px;
+    padding: 15px;
+}
+
+/* ===== Card ===== */
+.card {
+    background: #ffffff;
+    border-radius: 12px;
+    padding: 25px 30px;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+    transition: 0.3s;
+}
+
+.card:hover {
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.12);
+}
+
+.card h2 {
+    text-align: center;
+    margin-bottom: 20px;
+    color: #222222;
+    font-weight: 600;
+    font-size: 22px;
+}
+
+/* ===== Form ===== */
+.card-form {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.input {
+    position: relative;
+    width: 48%;
+    display: flex;
+    flex-direction: column;
+}
+
+/* ===== Fixed Label ===== */
+.input label {
+    margin-bottom: 5px;
+    font-weight: 500;
+    color: #555555;
+    font-size: 13px;
+}
+
+/* ===== Inputs & Selects ===== */
+.input input[type="number"],
+.input input[type="date"],
+.input select {
+    width: 100%;
+    padding: 9px 10px;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+    outline: none;
+    font-size: 14px;
+    transition: 0.3s;
+}
+
+/* ===== Focus Effect ===== */
+.input input:focus,
+.input select:focus {
+    border-color: #4a90e2;
+    box-shadow: 0 0 6px rgba(74, 144, 226, 0.3);
+}
+
+/* ===== Action Button ===== */
+.action {
+    width: 100%;
+    text-align: center;
+    margin-top: 20px;
+}
+
+.action-button {
+    background: linear-gradient(135deg, #4a90e2, #357abd);
+    color: #fff;
+    border: none;
+    padding: 11px 22px;
+    font-size: 15px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: 0.3s;
+    font-weight: 500;
+}
+
+.action-button:hover {
+    background: linear-gradient(135deg, #357abd, #2a5d9e);
+}
+
+/* ===== Prediction Result ===== */
+p {
+    font-size: 16px;
+    color: #222222;
+    margin-top: 15px;
+}
+
+/* ===== Responsive ===== */
+@media screen and (max-width: 768px) {
+    .input {
+        width: 100%;
+    }
+}

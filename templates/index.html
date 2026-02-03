@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Vehicle Maintenance Prediction</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body>
+<div class="container">
+    <div class="card">
+        <h2>Vehicle Maintenance Prediction</h2>
+
+        <form action="{{ url_for('home') }}" method="POST" class="card-form">
+
+            <div class="input">
+                <label>Make and Model</label>
+                <select name="Make_and_Model" required>
+                    <option value="Chevy Silverado">Chevy Silverado</option>
+                    <option value="Ford F-150">Ford F-150</option>
+                    <option value="Other">Other (e.g., Tesla Semi, Volvo FH)</option>
+                </select>
+            </div>
+
+            <div class="input">
+                <label>Year of Manufacture</label>
+                <input type="number" name="Year_of_Manufacture" required>
+            </div>
+
+            <div class="input">
+                <label>Vehicle Type</label>
+                <select name="Vehicle_Type" required>
+                    <option value="Van">Van</option>
+                    <option value="Truck">Truck</option>
+                    <option value="Other">Other</option>
+                </select>
+            </div>
+
+            <div class="input">
+                <label>Route Info</label>
+                <select name="Route_Info" required>
+                    <option value="Highway">Highway</option>
+                    <option value="Urban">Urban</option>
+                    <option value="Rural">Rural</option>
+                </select>
+            </div>
+
+            <div class="input">
+                <label>Maintenance Type</label>
+                <select name="Maintenance_Type" required>
+                    <option value="Tire Rotation">Tire Rotation</option>
+                    <option value="Oil Change">Oil Change</option>
+                    <option value="Engine Overhaul">Engine Overhaul</option>
+                </select>
+            </div>
+
+            <div class="input">
+                <label>Brake Condition</label>
+                <select name="Brake_Condition" required>
+                    <option value="Good">Good</option>
+                    <option value="Fair">Fair</option>
+                    <option value="Poor">Poor</option>
+                </select>
+            </div>
+
+            <div class="input">
+                <label>Failure History (0 or 1)</label>
+                <input type="number" name="Failure_History" required min="0" max="1" step="1">
+            </div>
+
+            <div class="input">
+                <label>Weather Conditions</label>
+                <select name="Weather_Conditions" required>
+                    <option value="Clear">Clear</option>
+                    <option value="Rainy">Rainy</option>
+                    <option value="Snowy">Snowy</option>
+                    <option value="Windy">Windy</option>
+                </select>
+            </div>
+
+            <div class="input">
+                <label>Road Conditions</label>
+                <select name="Road_Conditions" required>
+                    <option value="Highway">Highway</option>
+                    <option value="Urban">Urban</option>
+                    <option value="Rural">Rural</option>
+                </select>
+            </div>
+
+            <div class="input">
+                <label>Load Capacity</label>
+                <input type="number" name="Load_Capacity_final" required>
+            </div>
+            
+            <div class="input">
+                <label>Actual Load</label>
+                <input type="number" name="Actual_Load" required step="any">
+            </div>
+
+            <div class="input">
+                <label>Usage Hours</label>
+                <input type="number" name="Usage_Hours" required step="any">
+            </div>
+
+            <div class="input">
+                <label>Tire Pressure</label>
+                <select name="Tire_Pressure_cat" required>
+                    <option value="Normal">Normal</option>
+                    <option value="Low">Low</option>
+                    <option value="High">High</option>
+                </select>
+            </div>
+
+            <div class="input">
+                <label>Oil Quality</label>
+                <select name="Oil_Quality_cat" required>
+                    <option value="Good">Good</option>
+                    <option value="Fair">Fair</option>
+                    <option value="Poor">Poor</option>
+                </select>
+            </div>
+
+            <div class="input">
+                <label>Impact on Efficiency</label>
+                <select name="Impact_on_Efficiency_cat" required>
+                    <option value="Low">Low</option>
+                    <option value="Medium">Medium</option>
+                    <option value="High">High</option>
+                </select>
+            </div>
+
+            <div class="input">
+                <label>Vibration Levels</label>
+                <select name="Vibration_Levels_cat" required>
+                    <option value="Low">Low</option>
+                    <option value="Medium">Medium</option>
+                    <option value="High">High</option>
+                </select>
+            </div>
+
+            <div class="input">
+                <label>Downtime Maintenance</label>
+                <select name="Downtime_Maintenance_cat" required>
+                    <option value="None">None</option>
+                    <option value="Short">Short</option>
+                    <option value="Long">Long</option>
+                </select>
+            </div>
+
+            <div class="input">
+                <label>Fuel Consumption</label>
+                <select name="Fuel_Consumption_cat" required>
+                    <option value="Low">Low</option>
+                    <option value="Medium">Medium</option>
+                    <option value="High">High</option>
+                </select>
+            </div>
+
+            <div class="input">
+                <label>Last Maintenance Date</label>
+                <input type="date" name="Last_Maintenance_Date" required>
+            </div>
+
+            <div class="action">
+                <button type="submit" name="predict" class="action-button">Predict</button>
+            </div>
+        </form>
+
+        {% if probability is not none %}
+        <center>
+            <p style="font-weight:bold;">
+                Maintenance Needed:
+                {% if prediction == 1 %}
+                    Yes 🚨
+                {% else %}
+                    No ✅
+                {% endif %}
+                <br>
+                Probability: {{ probability }}
+            </p>
+        </center>
+        {% endif %}
+
+    </div>
+</div>
+</body>
+</html>
