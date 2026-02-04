@@ -1,5 +1,6 @@
 
 from flask import Flask, request, render_template, jsonify
+from flask_cors import CORS
 import pandas as pd
 import joblib
 import numpy as np
@@ -11,6 +12,7 @@ std_scaler = joblib.load('standard_scaler.pkl')
 rob_scaler = joblib.load('robust_scaler.pkl')
 
 app = Flask(__name__)
+CORS(app)
 
 ord_cols = [
     'Brake_Condition',
