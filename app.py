@@ -1,5 +1,5 @@
 
-from flask import Flask, request, render_template
+from flask import Flask, request, render_template, jsonify
 import pandas as pd
 import joblib
 import numpy as np
@@ -39,90 +39,117 @@ VIBRATION_MID = {
 }
 
 
+def get_prediction(data):
+    df = pd.DataFrame([data])
+
+    # ===== Numeric =====
+    for col in numeric_cols:
+        df[col] = pd.to_numeric(df[col], errors='coerce')
+
+    # ===== Date =====
+    df['Last_Maintenance_Date'] = pd.to_datetime(df['Last_Maintenance_Date'])
+    today = pd.Timestamp.today()
+
+    df['days_since_last_maintenance'] = (today - df['Last_Maintenance_Date']).dt.days
+    df['last_maintenance_month'] = df['Last_Maintenance_Date'].dt.month
+    df['last_maintenance_dayofweek'] = df['Last_Maintenance_Date'].dt.dayofweek
+    df.drop('Last_Maintenance_Date', axis=1, inplace=True)
+
+    # ===== Anomalies =====
+    df['Anomalies_Detected'] = 0.0
+    df.loc[df['Vibration_Levels_cat'] == 'Medium', 'Anomalies_Detected'] += 0.5
+    df.loc[df['Vibration_Levels_cat'] == 'High', 'Anomalies_Detected'] += 1
+    df.loc[df['Tire_Pressure_cat'] == 'Low', 'Anomalies_Detected'] += 1
+    df.loc[df['Oil_Quality_cat'] == 'Fair', 'Anomalies_Detected'] += 0.5
+    df.loc[df['Oil_Quality_cat'] == 'Poor', 'Anomalies_Detected'] += 1
+    df.loc[df['Impact_on_Efficiency_cat'] == 'Medium', 'Anomalies_Detected'] += 0.5
+    df.loc[df['Impact_on_Efficiency_cat'] == 'High', 'Anomalies_Detected'] += 1
+
+    # ===== Feature Engineering =====
+    df['vehicle_age'] = pd.Timestamp.today().year - df['Year_of_Manufacture']
+    df['usage_per_year'] = df['Usage_Hours'] / (df['vehicle_age'] + 1)
+    df['load_ratio'] = df['Actual_Load'] / (df['Load_Capacity_final'] + 1e-5)
+    
+    #Log Transformation
+    df['Load_Capacity_final'] = np.log1p(df['Load_Capacity_final'])
+    df['usage_per_year_final'] = np.log1p(df['usage_per_year'])
+    
+    # ===== Mechanical Stress =====
+    ENGINE_TEMP = 120
+    df['mechanical_stress'] = (
+    df['Oil_Quality_cat'].map(OIL_QUALITY_MID) +
+    df['Vibration_Levels_cat'].map(VIBRATION_MID) +
+    ENGINE_TEMP
+    ) / 3
+    
+    # ===== Encoding =====
+    df[ord_cols] = oe.transform(df[ord_cols])
+
+    ohe_df = pd.DataFrame(
+        ohe.transform(df[onehot_cols]),
+        columns=ohe.get_feature_names_out(onehot_cols)
+    )
+
+    df = pd.concat([df.drop(columns=onehot_cols), ohe_df], axis=1)
+
+    # ===== Align Columns =====
+    df = df.reindex(columns=model.feature_names_in_, fill_value=0)
+
+    # ===== Scaling =====
+    df[std_scaler.feature_names_in_] = std_scaler.transform(
+        df[std_scaler.feature_names_in_]
+    )
+    df[rob_scaler.feature_names_in_] = rob_scaler.transform(
+        df[rob_scaler.feature_names_in_]
+    )
+    # ===== Best threshold from validation =====
+    BEST_THRESHOLD = 0.4 
+    # ===== Predict =====
+    probability = float(model.predict_proba(df)[0, 1])
+    prediction = int(probability > BEST_THRESHOLD)
+    
+    return prediction, probability
+
 
 @app.route('/', methods=['GET', 'POST'])
 def home():
     prediction = None
     probability = None
-
    
     if request.method == 'POST' and 'predict' in request.form:
-
         data = request.form.to_dict()
-        df = pd.DataFrame([data])
-
-        # ===== Numeric =====
-        for col in numeric_cols:
-            df[col] = pd.to_numeric(df[col], errors='coerce')
-
-        # ===== Date =====
-        df['Last_Maintenance_Date'] = pd.to_datetime(df['Last_Maintenance_Date'])
-        today = pd.Timestamp.today()
-
-        df['days_since_last_maintenance'] = (today - df['Last_Maintenance_Date']).dt.days
-        df['last_maintenance_month'] = df['Last_Maintenance_Date'].dt.month
-        df['last_maintenance_dayofweek'] = df['Last_Maintenance_Date'].dt.dayofweek
-        df.drop('Last_Maintenance_Date', axis=1, inplace=True)
-
-        # ===== Anomalies =====
-        df['Anomalies_Detected'] = 0.0
-        df.loc[df['Vibration_Levels_cat'] == 'Medium', 'Anomalies_Detected'] += 0.5
-        df.loc[df['Vibration_Levels_cat'] == 'High', 'Anomalies_Detected'] += 1
-        df.loc[df['Tire_Pressure_cat'] == 'Low', 'Anomalies_Detected'] += 1
-        df.loc[df['Oil_Quality_cat'] == 'Fair', 'Anomalies_Detected'] += 0.5
-        df.loc[df['Oil_Quality_cat'] == 'Poor', 'Anomalies_Detected'] += 1
-        df.loc[df['Impact_on_Efficiency_cat'] == 'Medium', 'Anomalies_Detected'] += 0.5
-        df.loc[df['Impact_on_Efficiency_cat'] == 'High', 'Anomalies_Detected'] += 1
-
-        # ===== Feature Engineering =====
-        df['vehicle_age'] = pd.Timestamp.today().year - df['Year_of_Manufacture']
-        df['usage_per_year'] = df['Usage_Hours'] / (df['vehicle_age'] + 1)
-        df['load_ratio'] = df['Actual_Load'] / (df['Load_Capacity_final'] + 1e-5)
-        
-        #Log Transformation
-        df['Load_Capacity_final'] = np.log1p(df['Load_Capacity_final'])
-        df['usage_per_year_final'] = np.log1p(df['usage_per_year'])
-        
-        # ===== Mechanical Stress =====
-        ENGINE_TEMP = 120
-        df['mechanical_stress'] = (
-        df['Oil_Quality_cat'].map(OIL_QUALITY_MID) +
-        df['Vibration_Levels_cat'].map(VIBRATION_MID) +
-        ENGINE_TEMP
-        ) / 3
-        
-        # ===== Encoding =====
-        df[ord_cols] = oe.transform(df[ord_cols])
-
-        ohe_df = pd.DataFrame(
-            ohe.transform(df[onehot_cols]),
-            columns=ohe.get_feature_names_out(onehot_cols)
-        )
-
-        df = pd.concat([df.drop(columns=onehot_cols), ohe_df], axis=1)
-
-        # ===== Align Columns =====
-        df = df.reindex(columns=model.feature_names_in_, fill_value=0)
-
-        # ===== Scaling =====
-        df[std_scaler.feature_names_in_] = std_scaler.transform(
-            df[std_scaler.feature_names_in_]
-        )
-        df[rob_scaler.feature_names_in_] = rob_scaler.transform(
-            df[rob_scaler.feature_names_in_]
-        )
-        # ===== Best threshold from validation =====
-        BEST_THRESHOLD = 0.4 
-        # ===== Predict =====
-        probability = float(model.predict_proba(df)[0, 1])
-        prediction = int(probability > BEST_THRESHOLD)
-
+        try:
+            prediction, probability = get_prediction(data)
+        except Exception as e:
+            # Handle potential errors during prediction (e.g. missing fields)
+            print(f"Error during prediction: {e}")
 
     return render_template(
         'index.html',
         prediction=prediction,
         probability=round(probability, 3) if probability is not None else None
     )
+
+
+@app.route('/predict', methods=['POST'])
+def predict():
+    try:
+        # Check if request is JSON
+        if request.is_json:
+            data = request.get_json()
+        else:
+            # Fallback for form data if needed, or error
+            return jsonify({'error': 'Request must be JSON'}), 400
+
+        prediction, probability = get_prediction(data)
+        
+        return jsonify({
+            'prediction': prediction,
+            'probability': round(probability, 3),
+            'status': 'success'
+        })
+    except Exception as e:
+        return jsonify({'error': str(e), 'status': 'error'}), 500
 
 
 if __name__ == '__main__':
